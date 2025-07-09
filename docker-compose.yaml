@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - shared_data:/shared
+    depends_on:
+      - mysql
+      - minio
+    networks:
+      custom_net:
+        ipv4_address: 192.168.100.10
+
+  mysql:
+    image: mysql:9.3.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ecommerce
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      custom_net:
+        ipv4_address: 192.168.100.11
+
+  minio:
+    image: minio/minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+      - shared_data:/shared
+    command: server /data --console-address ":9001"
+    networks:
+      custom_net:
+        ipv4_address: 192.168.100.12
+
+volumes:
+  db_data:
+  minio_data:
+  shared_data:
+
+networks:
+  custom_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.100.0/25
+
