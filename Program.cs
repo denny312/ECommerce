@@ -63,7 +63,7 @@ namespace ECommerce
                 pattern: "{controller=Home}/{action=Index}/{id?}");
             app.MapRazorPages();
 
-            app.Run();
+            app.Run("https://0.0.0.0:5000");
         }
     }
 }
