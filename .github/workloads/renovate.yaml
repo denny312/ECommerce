@@ -1,0 +1,12 @@
+name: Renovate
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 7 * * 1-5"
+
+jobs:
+  run-renovate:
+    uses: criticalcase/renovate-config/.github/workflows/renovate.yaml@main
+    secrets: inherit
+
