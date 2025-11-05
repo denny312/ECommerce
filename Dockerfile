@@ -5,19 +5,16 @@ EXPOSE 5000
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY . .
-
-# Aggiunta dei pacchetti NuGet richiesti
-RUN dotnet add package Microsoft.EntityFrameworkCore --version 8.0.18 && \
-    dotnet add package Microsoft.EntityFrameworkCore.Relational --version 8.0.18 && \
-    dotnet add package MySql.EntityFrameworkCore --version 8.0.18 && \
-    dotnet add package Pomelo.EntityFrameworkCore.MySql --version 8.0.3 && \
-    dotnet add package PayPalCheckoutSdk --version 1.0.4 && \
-    dotnet add package Minio
-
+RUN dotnet restore
 RUN dotnet publish -c Release -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS migrate
+WORKDIR /src
+COPY . .
+RUN dotnet tool install --global dotnet-ef
+RUN dotnet ef database update --connection "Server=mysql;Port=3306;Database=ecommerce;Uid=user;Pwd=pass;"
 
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "ECommerce.dll"]
-
